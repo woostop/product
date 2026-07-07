@@ -6,6 +6,34 @@
   <title>로또 번호 추천기</title>
 
   <style>
+    :root {
+      color-scheme: light;
+      --page-bg: linear-gradient(135deg, #f6d365, #fda085);
+      --card-bg: #ffffff;
+      --text: #2f3136;
+      --muted: #666b76;
+      --notice: #8a8f99;
+      --button-bg: #ff6b6b;
+      --button-hover: #ff5252;
+      --shadow: rgba(0, 0, 0, 0.15);
+      --toggle-bg: #f1f3f5;
+      --toggle-text: #2f3136;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --page-bg: linear-gradient(135deg, #1f2937, #111827);
+      --card-bg: #181f2a;
+      --text: #f7f7f8;
+      --muted: #c4cad4;
+      --notice: #9ca3af;
+      --button-bg: #4f8cff;
+      --button-hover: #3778ee;
+      --shadow: rgba(0, 0, 0, 0.45);
+      --toggle-bg: #273244;
+      --toggle-text: #f7f7f8;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -16,28 +44,54 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #f6d365, #fda085);
+      background: var(--page-bg);
       font-family: Arial, sans-serif;
+      transition: background 0.25s ease;
     }
 
     .container {
       width: 90%;
       max-width: 420px;
-      background: white;
-      padding: 30px 20px;
+      background: var(--card-bg);
+      padding: 24px 20px 30px;
       border-radius: 20px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 10px 25px var(--shadow);
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .theme-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .theme-toggle {
+      width: auto;
+      min-width: 102px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--toggle-bg);
+      color: var(--toggle-text);
+      font-size: 14px;
+      box-shadow: none;
+    }
+
+    .theme-toggle:hover {
+      background: var(--toggle-bg);
+      transform: translateY(-1px);
     }
 
     h1 {
-      margin-bottom: 10px;
-      color: #333;
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 28px;
     }
 
     p {
-      color: #666;
-      margin-bottom: 25px;
+      color: var(--muted);
+      margin: 0 0 25px;
+      line-height: 1.5;
     }
 
     .numbers {
@@ -68,16 +122,16 @@
       padding: 15px;
       border: none;
       border-radius: 12px;
-      background: #ff6b6b;
+      background: var(--button-bg);
       color: white;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background 0.2s ease, transform 0.2s ease;
     }
 
     button:hover {
-      background: #ff5252;
+      background: var(--button-hover);
       transform: translateY(-2px);
     }
 
@@ -88,15 +142,20 @@
     .notice {
       margin-top: 18px;
       font-size: 13px;
-      color: #999;
+      color: var(--notice);
     }
   </style>
 </head>
 <body>
-
   <div class="container">
+    <div class="theme-row">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="다크 모드로 변경">
+        다크 모드
+      </button>
+    </div>
+
     <h1>로또 번호 추천기</h1>
-    <p>버튼을 누르면 로또 번호 6개를 추천해줘요.</p>
+    <p>버튼을 누르면 로또 번호 6개를 추천해줍니다.</p>
 
     <div class="numbers" id="numbers">
       <span class="ball">?</span>
@@ -107,14 +166,36 @@
       <span class="ball">?</span>
     </div>
 
-    <button onclick="generateLotto()">번호 추천받기</button>
+    <button type="button" onclick="generateLotto()">번호 추천받기</button>
 
     <div class="notice">
-      재미용 랜덤 추천입니다.
+      실제 당첨과는 무관한 랜덤 추천입니다.
     </div>
   </div>
 
   <script>
+    const themeToggle = document.getElementById("themeToggle");
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+
+    setTheme(initialTheme);
+
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.dataset.theme;
+      setTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+
+    function setTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+      themeToggle.textContent = theme === "dark" ? "화이트 모드" : "다크 모드";
+      themeToggle.setAttribute(
+        "aria-label",
+        theme === "dark" ? "화이트 모드로 변경" : "다크 모드로 변경"
+      );
+    }
+
     function generateLotto() {
       const lottoNumbers = [];
 
@@ -152,6 +233,5 @@
       });
     }
   </script>
-
 </body>
 </html>
