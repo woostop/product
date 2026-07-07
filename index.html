@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로또 번호 추천기</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 420px;
+      background: white;
+      padding: 30px 20px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .numbers {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 25px;
+      min-height: 55px;
+    }
+
+    .ball {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: white;
+      background: #ff7675;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: #ff6b6b;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #ff5252;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .notice {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>로또 번호 추천기</h1>
+    <p>버튼을 누르면 로또 번호 6개를 추천해줘요.</p>
+
+    <div class="numbers" id="numbers">
+      <span class="ball">?</span>
+      <span class="ball">?</span>
+      <span class="ball">?</span>
+      <span class="ball">?</span>
+      <span class="ball">?</span>
+      <span class="ball">?</span>
+    </div>
+
+    <button onclick="generateLotto()">번호 추천받기</button>
+
+    <div class="notice">
+      재미용 랜덤 추천입니다.
+    </div>
+  </div>
+
+  <script>
+    function generateLotto() {
+      const lottoNumbers = [];
+
+      while (lottoNumbers.length < 6) {
+        const randomNumber = Math.floor(Math.random() * 45) + 1;
+
+        if (!lottoNumbers.includes(randomNumber)) {
+          lottoNumbers.push(randomNumber);
+        }
+      }
+
+      lottoNumbers.sort((a, b) => a - b);
+
+      const numbersDiv = document.getElementById("numbers");
+      numbersDiv.innerHTML = "";
+
+      lottoNumbers.forEach(number => {
+        const ball = document.createElement("span");
+        ball.className = "ball";
+        ball.textContent = number;
+
+        if (number <= 10) {
+          ball.style.background = "#f1c40f";
+        } else if (number <= 20) {
+          ball.style.background = "#3498db";
+        } else if (number <= 30) {
+          ball.style.background = "#e74c3c";
+        } else if (number <= 40) {
+          ball.style.background = "#2ecc71";
+        } else {
+          ball.style.background = "#9b59b6";
+        }
+
+        numbersDiv.appendChild(ball);
+      });
+    }
+  </script>
+
+</body>
+</html>
