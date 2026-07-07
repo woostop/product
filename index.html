@@ -3,35 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>로또 번호 추천기</title>
-
+  <title>미니 공룡 러너</title>
   <style>
     :root {
-      color-scheme: light;
-      --page-bg: linear-gradient(135deg, #f6d365, #fda085);
-      --card-bg: #ffffff;
-      --text: #2f3136;
-      --muted: #666b76;
-      --notice: #8a8f99;
-      --button-bg: #ff6b6b;
-      --button-hover: #ff5252;
-      --shadow: rgba(0, 0, 0, 0.15);
-      --toggle-bg: #f1f3f5;
-      --toggle-text: #2f3136;
-    }
-
-    [data-theme="dark"] {
-      color-scheme: dark;
-      --page-bg: linear-gradient(135deg, #1f2937, #111827);
-      --card-bg: #181f2a;
-      --text: #f7f7f8;
-      --muted: #c4cad4;
-      --notice: #9ca3af;
-      --button-bg: #4f8cff;
-      --button-hover: #3778ee;
-      --shadow: rgba(0, 0, 0, 0.45);
-      --toggle-bg: #273244;
-      --toggle-text: #f7f7f8;
+      --bg: #f5f3ee;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d2d6dc;
+      --accent: #2f7d5d;
+      --accent-dark: #24634a;
+      --danger: #d94841;
+      --shadow: rgba(31, 41, 51, 0.16);
     }
 
     * {
@@ -41,197 +24,488 @@
     body {
       margin: 0;
       min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(47, 125, 93, 0.12), transparent 28%),
+        linear-gradient(135deg, #f7f4ec 0%, #e8edf0 100%);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .game-shell {
+      width: min(960px, 100%);
+    }
+
+    .topbar {
       display: flex;
-      justify-content: center;
       align-items: center;
-      background: var(--page-bg);
-      font-family: Arial, sans-serif;
-      transition: background 0.25s ease;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 420px;
-      background: var(--card-bg);
-      padding: 24px 20px 30px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 25px var(--shadow);
-      transition: background 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .theme-row {
-      display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      gap: 12px;
       margin-bottom: 12px;
     }
 
-    .theme-toggle {
-      width: auto;
-      min-width: 102px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: var(--toggle-bg);
-      color: var(--toggle-text);
-      font-size: 14px;
-      box-shadow: none;
-    }
-
-    .theme-toggle:hover {
-      background: var(--toggle-bg);
-      transform: translateY(-1px);
-    }
-
     h1 {
-      margin: 0 0 10px;
-      color: var(--text);
-      font-size: 28px;
+      margin: 0;
+      font-size: clamp(24px, 4vw, 42px);
+      letter-spacing: 0;
     }
 
-    p {
-      color: var(--muted);
-      margin: 0 0 25px;
-      line-height: 1.5;
-    }
-
-    .numbers {
+    .scoreboard {
       display: flex;
-      justify-content: center;
+      gap: 8px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 25px;
-      min-height: 55px;
+      justify-content: flex-end;
     }
 
-    .ball {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
+    .score-pill {
+      min-width: 98px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      text-align: right;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(31, 41, 51, 0.08);
+    }
+
+    .score-pill span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .stage {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 38px var(--shadow);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 7;
+      background: #fbfaf6;
+      touch-action: manipulation;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      pointer-events: none;
+    }
+
+    .message {
+      width: min(420px, 92%);
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(31, 41, 51, 0.14);
+    }
+
+    .message strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .message p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .controls {
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-weight: bold;
-      font-size: 18px;
-      color: white;
-      background: #ff7675;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     button {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 12px;
-      background: var(--button-bg);
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
+      min-width: 120px;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s ease, transform 0.2s ease;
+      transition: background 0.18s ease, transform 0.18s ease;
     }
 
     button:hover {
-      background: var(--button-hover);
-      transform: translateY(-2px);
+      background: var(--accent-dark);
+      transform: translateY(-1px);
     }
 
     button:active {
       transform: scale(0.98);
     }
 
-    .notice {
-      margin-top: 18px;
-      font-size: 13px;
-      color: var(--notice);
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+
+      .topbar,
+      .controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .scoreboard {
+        justify-content: stretch;
+      }
+
+      .score-pill {
+        flex: 1;
+        text-align: left;
+      }
+
+      canvas {
+        aspect-ratio: 4 / 3;
+      }
+
+      button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="theme-row">
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="다크 모드로 변경">
-        다크 모드
-      </button>
+  <main class="game-shell">
+    <div class="topbar">
+      <h1>미니 공룡 러너</h1>
+      <div class="scoreboard" aria-live="polite">
+        <div class="score-pill"><span>점수</span><output id="score">0</output></div>
+        <div class="score-pill"><span>최고</span><output id="bestScore">0</output></div>
+      </div>
     </div>
 
-    <h1>로또 번호 추천기</h1>
-    <p>버튼을 누르면 로또 번호 6개를 추천해줍니다.</p>
+    <section class="stage">
+      <canvas id="game" width="960" height="420" aria-label="공룡 점프 게임"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="message">
+          <strong id="messageTitle">준비</strong>
+          <p id="messageText">스페이스바, 위 방향키, 화면 터치로 시작하고 점프합니다.</p>
+        </div>
+      </div>
+    </section>
 
-    <div class="numbers" id="numbers">
-      <span class="ball">?</span>
-      <span class="ball">?</span>
-      <span class="ball">?</span>
-      <span class="ball">?</span>
-      <span class="ball">?</span>
-      <span class="ball">?</span>
+    <div class="controls">
+      <span>장애물을 피할수록 속도가 빨라집니다.</span>
+      <button id="restart" type="button">다시 시작</button>
     </div>
-
-    <button type="button" onclick="generateLotto()">번호 추천받기</button>
-
-    <div class="notice">
-      실제 당첨과는 무관한 랜덤 추천입니다.
-    </div>
-  </div>
+  </main>
 
   <script>
-    const themeToggle = document.getElementById("themeToggle");
-    const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const bestScoreEl = document.getElementById("bestScore");
+    const overlay = document.getElementById("overlay");
+    const messageTitle = document.getElementById("messageTitle");
+    const messageText = document.getElementById("messageText");
+    const restartButton = document.getElementById("restart");
 
-    setTheme(initialTheme);
+    const groundY = 330;
+    const gravity = 0.82;
+    const jumpPower = -15.5;
+    const bestScoreKey = "mini-dino-runner-best";
 
-    themeToggle.addEventListener("click", () => {
-      const currentTheme = document.documentElement.dataset.theme;
-      setTheme(currentTheme === "dark" ? "light" : "dark");
-    });
+    let bestScore = Number(localStorage.getItem(bestScoreKey) || 0);
+    let state;
+    let lastTime = 0;
 
-    function setTheme(theme) {
-      document.documentElement.dataset.theme = theme;
-      localStorage.setItem("theme", theme);
-      themeToggle.textContent = theme === "dark" ? "화이트 모드" : "다크 모드";
-      themeToggle.setAttribute(
-        "aria-label",
-        theme === "dark" ? "화이트 모드로 변경" : "다크 모드로 변경"
-      );
+    bestScoreEl.value = bestScore;
+
+    function createState() {
+      return {
+        running: false,
+        gameOver: false,
+        score: 0,
+        speed: 6,
+        spawnTimer: 0,
+        clouds: [
+          { x: 130, y: 74, speed: 0.45 },
+          { x: 520, y: 108, speed: 0.34 },
+          { x: 780, y: 62, speed: 0.4 }
+        ],
+        obstacles: [],
+        player: {
+          x: 96,
+          y: groundY - 64,
+          width: 58,
+          height: 64,
+          vy: 0,
+          onGround: true,
+          step: 0
+        }
+      };
     }
 
-    function generateLotto() {
-      const lottoNumbers = [];
+    function resetGame(startNow = false) {
+      state = createState();
+      scoreEl.value = 0;
+      lastTime = performance.now();
 
-      while (lottoNumbers.length < 6) {
-        const randomNumber = Math.floor(Math.random() * 45) + 1;
-
-        if (!lottoNumbers.includes(randomNumber)) {
-          lottoNumbers.push(randomNumber);
-        }
+      if (startNow) {
+        state.running = true;
+        hideOverlay();
+      } else {
+        showOverlay("준비", "스페이스바, 위 방향키, 화면 터치로 시작하고 점프합니다.");
       }
 
-      lottoNumbers.sort((a, b) => a - b);
+      draw();
+    }
 
-      const numbersDiv = document.getElementById("numbers");
-      numbersDiv.innerHTML = "";
+    function startOrJump() {
+      if (state.gameOver) {
+        resetGame(true);
+        return;
+      }
 
-      lottoNumbers.forEach(number => {
-        const ball = document.createElement("span");
-        ball.className = "ball";
-        ball.textContent = number;
+      if (!state.running) {
+        state.running = true;
+        hideOverlay();
+      }
 
-        if (number <= 10) {
-          ball.style.background = "#f1c40f";
-        } else if (number <= 20) {
-          ball.style.background = "#3498db";
-        } else if (number <= 30) {
-          ball.style.background = "#e74c3c";
-        } else if (number <= 40) {
-          ball.style.background = "#2ecc71";
-        } else {
-          ball.style.background = "#9b59b6";
+      jump();
+    }
+
+    function jump() {
+      if (!state.player.onGround) {
+        return;
+      }
+
+      state.player.vy = jumpPower;
+      state.player.onGround = false;
+    }
+
+    function update(delta) {
+      if (!state.running || state.gameOver) {
+        return;
+      }
+
+      const scale = delta / 16.67;
+      state.score += scale * 0.22;
+      state.speed = Math.min(14, 6 + state.score / 180);
+      scoreEl.value = Math.floor(state.score);
+
+      updatePlayer(scale);
+      updateClouds(scale);
+      updateObstacles(scale);
+
+      if (hasCollision()) {
+        endGame();
+      }
+    }
+
+    function updatePlayer(scale) {
+      const player = state.player;
+      player.vy += gravity * scale;
+      player.y += player.vy * scale;
+      player.step += scale;
+
+      const floor = groundY - player.height;
+      if (player.y >= floor) {
+        player.y = floor;
+        player.vy = 0;
+        player.onGround = true;
+      }
+    }
+
+    function updateClouds(scale) {
+      state.clouds.forEach(cloud => {
+        cloud.x -= cloud.speed * scale;
+        if (cloud.x < -90) {
+          cloud.x = canvas.width + Math.random() * 220;
+          cloud.y = 50 + Math.random() * 82;
         }
-
-        numbersDiv.appendChild(ball);
       });
     }
+
+    function updateObstacles(scale) {
+      state.spawnTimer -= scale;
+
+      if (state.spawnTimer <= 0) {
+        const height = 34 + Math.random() * 36;
+        const width = 24 + Math.random() * 26;
+        state.obstacles.push({
+          x: canvas.width + 20,
+          y: groundY - height,
+          width,
+          height
+        });
+        state.spawnTimer = 72 + Math.random() * 72 - state.speed * 2.6;
+      }
+
+      state.obstacles.forEach(obstacle => {
+        obstacle.x -= state.speed * scale;
+      });
+
+      state.obstacles = state.obstacles.filter(obstacle => obstacle.x + obstacle.width > -20);
+    }
+
+    function hasCollision() {
+      const p = state.player;
+      const pad = 9;
+      const playerBox = {
+        x: p.x + pad,
+        y: p.y + 8,
+        width: p.width - pad * 2,
+        height: p.height - 10
+      };
+
+      return state.obstacles.some(obstacle => {
+        const obstacleBox = {
+          x: obstacle.x + 4,
+          y: obstacle.y + 4,
+          width: obstacle.width - 8,
+          height: obstacle.height - 4
+        };
+
+        return (
+          playerBox.x < obstacleBox.x + obstacleBox.width &&
+          playerBox.x + playerBox.width > obstacleBox.x &&
+          playerBox.y < obstacleBox.y + obstacleBox.height &&
+          playerBox.y + playerBox.height > obstacleBox.y
+        );
+      });
+    }
+
+    function endGame() {
+      state.running = false;
+      state.gameOver = true;
+
+      const finalScore = Math.floor(state.score);
+      if (finalScore > bestScore) {
+        bestScore = finalScore;
+        localStorage.setItem(bestScoreKey, bestScore);
+        bestScoreEl.value = bestScore;
+      }
+
+      showOverlay("게임 오버", `점수 ${finalScore}점. 스페이스바나 다시 시작 버튼으로 재도전하세요.`);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSky();
+      drawClouds();
+      drawGround();
+      drawObstacles();
+      drawPlayer();
+    }
+
+    function drawSky() {
+      ctx.fillStyle = "#fbfaf6";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#f4d35e";
+      ctx.beginPath();
+      ctx.arc(830, 80, 28, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawClouds() {
+      ctx.fillStyle = "#d9e1e8";
+      state.clouds.forEach(cloud => {
+        ctx.beginPath();
+        ctx.arc(cloud.x, cloud.y, 18, 0, Math.PI * 2);
+        ctx.arc(cloud.x + 22, cloud.y - 8, 24, 0, Math.PI * 2);
+        ctx.arc(cloud.x + 48, cloud.y, 18, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawGround() {
+      ctx.strokeStyle = "#9aa3ad";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(canvas.width, groundY);
+      ctx.stroke();
+
+      ctx.fillStyle = "#c3b7a4";
+      for (let x = -20; x < canvas.width + 20; x += 44) {
+        const offset = (state.score * state.speed * 0.18) % 44;
+        ctx.fillRect(x - offset, groundY + 22, 22, 3);
+      }
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "#2f7d5d";
+      state.obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.fillRect(obstacle.x - 9, obstacle.y + 14, 9, 10);
+        ctx.fillRect(obstacle.x + obstacle.width, obstacle.y + 20, 9, 10);
+      });
+    }
+
+    function drawPlayer() {
+      const p = state.player;
+      const legSwing = p.onGround ? Math.sin(p.step * 0.55) * 5 : 0;
+
+      ctx.fillStyle = "#343a40";
+      ctx.fillRect(p.x + 9, p.y + 20, 36, 36);
+      ctx.fillRect(p.x + 35, p.y + 5, 28, 26);
+      ctx.fillRect(p.x + 55, p.y + 14, 10, 7);
+      ctx.fillRect(p.x, p.y + 36, 16, 10);
+
+      ctx.fillStyle = "#fbfaf6";
+      ctx.fillRect(p.x + 51, p.y + 12, 5, 5);
+
+      ctx.fillStyle = "#343a40";
+      ctx.fillRect(p.x + 14, p.y + 54, 10, 18 + legSwing);
+      ctx.fillRect(p.x + 36, p.y + 54, 10, 18 - legSwing);
+    }
+
+    function showOverlay(title, text) {
+      messageTitle.textContent = title;
+      messageText.textContent = text;
+      overlay.style.display = "grid";
+    }
+
+    function hideOverlay() {
+      overlay.style.display = "none";
+    }
+
+    function loop(time) {
+      const delta = Math.min(34, time - lastTime);
+      lastTime = time;
+      update(delta);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener("keydown", event => {
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        startOrJump();
+      }
+    });
+
+    canvas.addEventListener("pointerdown", startOrJump);
+    restartButton.addEventListener("click", () => resetGame(true));
+
+    resetGame(false);
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>
